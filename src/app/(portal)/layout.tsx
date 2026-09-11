@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { getT } from "@/i18n/server";
-import { auth, resolveBrandingLogo, resolveBrandText } from "@/features/identity/server";
-import { getLocaleCookie } from "@/shared/lib/i18n/server";
+import { getT, getBrandLabels } from "@/i18n/server";
+import { auth, resolveBrandingLogo } from "@/features/identity/server";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Newspaper, Users, GraduationCap, CalendarDays, FileText, LogIn, LayoutDashboard, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,10 +8,9 @@ import { Button } from "@/components/ui/button";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const t = await getT();
   const session = await auth().catch(() => null);
-  const [logo, brand, cookieLocale] = await Promise.all([resolveBrandingLogo(), resolveBrandText(), getLocaleCookie()]);
-  const en = cookieLocale === "en";
-  const brandName = ((en ? brand?.nameEn : brand?.nameTh) || brand?.nameTh || "").trim() || t("app.name");
-  const brandTagline = ((en ? brand?.taglineEn : brand?.taglineTh) || brand?.taglineTh || "").trim() || t("app.tagline");
+  const [logo, brand] = await Promise.all([resolveBrandingLogo(), getBrandLabels()]);
+  const brandName = brand.name;
+  const brandTagline = brand.tagline;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">

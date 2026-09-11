@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { I18nProvider } from "@/shared/lib/i18n/client";
-import { getT } from "@/i18n/server";
+import { getBrandLabels } from "@/i18n/server";
 import { UI_MESSAGES } from "@/i18n";
 import { getLocaleCookie } from "@/shared/lib/i18n/server";
 import { DEFAULT_LOCALE } from "@/shared/lib/i18n/config";
@@ -16,11 +16,8 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"] 
 const sarabun = Sarabun({ variable: "--font-sarabun", subsets: ["thai", "latin"], weight: ["300", "400", "500", "600", "700", "800"], display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [t, brand, locale] = await Promise.all([getT(), resolveBrandText(), getLocaleCookie()]);
-  const en = (locale ?? DEFAULT_LOCALE) === "en";
-  const name = (en ? brand?.nameEn : brand?.nameTh) || brand?.nameTh;
-  const tagline = (en ? brand?.taglineEn : brand?.taglineTh) || brand?.taglineTh;
-  return { title: name || t("app.name"), description: tagline || t("app.tagline") };
+  const brand = await getBrandLabels();
+  return { title: brand.name, description: brand.tagline };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

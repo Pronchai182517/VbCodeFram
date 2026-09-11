@@ -3,10 +3,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useT } from "@/shared/lib/i18n/client";
 import { forgotPasswordAction } from "@/features/identity/actions";
-import { BrandMarkIcon, MailIcon } from "../_components/icons";
+import { MailIcon } from "../_components/icons";
+import { BrandMark } from "../_components/brand-mark";
+import { useBrandLabels } from "@/components/providers/branding-provider";
 
 export default function ForgotPasswordPage() {
   const t = useT();
+  const brandName = useBrandLabels().name;
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,7 +26,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="auth-box">
-      <div className="auth-mark"><i><BrandMarkIcon /></i><div><h1>{t("app.name")}</h1></div></div>
+      <div className="auth-mark"><i><BrandMark /></i><div><h1>{brandName}</h1></div></div>
       <div className="auth-card">
         <div className="hd"><h2>{t("forgot.title")}</h2><p>{t("forgot.desc")}</p></div>
         {sent ? (

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getT } from "@/i18n/server";
+import { getBrandLabels } from "@/i18n/server";
 import { auth } from "@/features/identity/server";
 import { prisma } from "@/shared/lib/infra/prisma";
 import { listPublicArticles } from "@/features/news/server";
@@ -9,16 +9,13 @@ import {
   listPublicStaffProfiles,
 } from "@/features/personnel/server";
 import { listResources } from "@/features/booking/server";
-import { resolveBrandText } from "@/features/identity/server";
 import { PortalHomeClient } from "./_components/portal-home-client";
 
 export async function generateMetadata(): Promise<Metadata> {
   // ชื่อบนแท็บเบราว์เซอร์ตามข้อความที่องค์กรตั้งไว้ (ถอยไปใช้ค่าตั้งต้นถ้ายังไม่ได้ตั้ง)
-  const [t, brand] = await Promise.all([getT(), resolveBrandText()]);
-  const name = brand?.nameTh?.trim() || t("app.name");
-  const tagline = brand?.taglineTh?.trim() || t("app.tagline");
+  const brand = await getBrandLabels();
   return {
-    title: `${name} | ${tagline}`,
+    title: `${brand.name} | ${brand.tagline}`,
     description: "ระบบสารสนเทศและบริการดิจิทัล คณะวิทยาศาสตร์และเทคโนโลยีสารสนเทศ - ข่าวสาร ทำเนียบบุคลากร หลักสูตร คำร้องออนไลน์ และระบบจองทรัพยากร",
   };
 }

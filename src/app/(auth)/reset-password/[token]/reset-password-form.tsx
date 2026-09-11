@@ -3,10 +3,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useT } from "@/shared/lib/i18n/client";
 import { resetPasswordAction } from "@/features/identity/actions";
-import { BrandMarkIcon, LockIcon } from "../../_components/icons";
+import { LockIcon } from "../../_components/icons";
+import { BrandMark } from "../../_components/brand-mark";
+import { useBrandLabels } from "@/components/providers/branding-provider";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const t = useT();
+  const brandName = useBrandLabels().name;
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [state, setState] = useState<"form" | "done" | "invalid">("form");
@@ -26,7 +29,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <div className="auth-box">
-      <div className="auth-mark"><i><BrandMarkIcon /></i><div><h1>{t("app.name")}</h1></div></div>
+      <div className="auth-mark"><i><BrandMark /></i><div><h1>{brandName}</h1></div></div>
       <div className="auth-card">
         <div className="hd"><h2>{t("reset.title")}</h2><p>{t("reset.desc")}</p></div>
         {state === "done" && <div className="state ok on"><p>{t("reset.done")}</p><div className="acts"><Link className="btn-sm solid" href="/login">{t("auth.signIn")}</Link></div></div>}

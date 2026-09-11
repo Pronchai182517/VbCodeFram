@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getT } from "@/i18n/server";
+import { getT, getBrandLabels } from "@/i18n/server";
 import { auth } from "@/features/identity/server";
 import { prisma } from "@/shared/lib/infra/prisma";
 import { listPrograms, listCourses } from "@/features/curriculum/server";
@@ -7,8 +7,9 @@ import { CurriculumPortalClient } from "./_components/curriculum-portal-client";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
+  const brand = await getBrandLabels();
   return {
-    title: `${t("curriculum.portal.title")} | ${t("app.name")}`,
+    title: `${t("curriculum.portal.title")} | ${brand.name}`,
     description: t("curriculum.portal.subtitle"),
   };
 }

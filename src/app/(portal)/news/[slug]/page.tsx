@@ -10,7 +10,7 @@ import {
   User,
   ArrowLeft,
 } from "lucide-react";
-import { getT } from "@/i18n/server";
+import { getT, getBrandLabels } from "@/i18n/server";
 import { getLocaleCookie } from "@/shared/lib/i18n/server";
 import { DEFAULT_LOCALE } from "@/shared/lib/i18n/config";
 import { formatDate } from "@/shared/lib/format";
@@ -26,6 +26,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const t = await getT();
+  const brand = await getBrandLabels();
   const session = await auth().catch(() => null);
   const tenantId =
     session?.tenantId ||
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const content = locale === "en" && article.contentEn ? article.contentEn : article.contentTh;
 
   return {
-    title: `${title} | ${t("app.name")}`,
+    title: `${title} | ${brand.name}`,
     description: content.slice(0, 160),
     openGraph: {
       title,

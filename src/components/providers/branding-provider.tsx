@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { BrandText } from "@/features/identity";
-import { useLocale } from "@/shared/lib/i18n/client";
+import { useLocale, useT } from "@/shared/lib/i18n/client";
 
 const Ctx = createContext<BrandText | null>(null);
 
@@ -24,4 +24,14 @@ export function useBranding(): ResolvedBrand {
     const pick = (th: string, en: string) => (locale === "en" && en.trim() !== "" ? en : th).trim() || null;
     return { name: pick(brand.nameTh, brand.nameEn), tagline: pick(brand.taglineTh, brand.taglineEn) };
   }, [brand, locale]);
+}
+
+/**
+ * ข้อความแบรนด์ที่พร้อมแสดงผล — ถอยไปใช้ข้อความตั้งต้นของระบบให้เลย
+ * ใช้กับทุกจุดที่เคยเรียก t("app.name") / t("app.tagline") ตรง ๆ
+ */
+export function useBrandLabels(): { name: string; tagline: string } {
+  const brand = useBranding();
+  const t = useT();
+  return { name: brand.name ?? t("app.name"), tagline: brand.tagline ?? t("app.tagline") };
 }

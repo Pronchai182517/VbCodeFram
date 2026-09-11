@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getT } from "@/i18n/server";
+import { getT, getBrandLabels } from "@/i18n/server";
 import { requirePermission, hasPermission } from "@/features/identity/server";
 import { BOOKING_P } from "@/features/booking";
 import {
@@ -10,8 +10,9 @@ import { BookingsClient } from "./_components/bookings-client";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
+  const brand = await getBrandLabels();
   return {
-    title: `${t("booking.title")} | ${t("app.name")}`,
+    title: `${t("booking.title")} | ${brand.name}`,
     description: t("booking.subtitle"),
   };
 }

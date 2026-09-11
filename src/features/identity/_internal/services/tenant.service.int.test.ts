@@ -9,7 +9,7 @@ describe("tenant.service", () => {
     const core = await seedCore(prisma, { tenantCode: "T", nameTh: "ท", nameEn: "T" });
     const adminId = await seedUser(prisma, core.tenantId, { email: "a@t.t", name: "A", passwordHash: "x", roleIds: [core.roleIds.SUPER_ADMIN] });
     expect(await getTenantPalette(core.tenantId)).toBe("blue");
-    await updateTenantSettings({ tenantId: core.tenantId, actorId: adminId, nameTh: "ม.ใหม่", nameEn: "New U", logoUrl: "", palette: "green" });
+    await updateTenantSettings({ tenantId: core.tenantId, actorId: adminId, nameTh: "ม.ใหม่", nameEn: "New U", logoUrl: "", palette: "green", theme: "light", fontFamily: "sarabun", fontSize: "medium" });
     const s = await getTenantSettings(core.tenantId);
     expect(s).toMatchObject({ code: "T", nameTh: "ม.ใหม่", nameEn: "New U", logoUrl: null, palette: "green" });
     expect(await getTenantPalette(core.tenantId)).toBe("green");
@@ -21,7 +21,7 @@ describe("tenant.service", () => {
     const adminId = await seedUser(prisma, core.tenantId, { email: "a2@t.t", name: "A2", passwordHash: "x", roleIds: [core.roleIds.SUPER_ADMIN] });
     await prisma.tenant.update({ where: { id: core.tenantId }, data: { settings: { palette: "blue", futureFeature: { foo: "bar" } } } });
 
-    await updateTenantSettings({ tenantId: core.tenantId, actorId: adminId, nameTh: "ม.2", nameEn: "U2", logoUrl: "", palette: "green" });
+    await updateTenantSettings({ tenantId: core.tenantId, actorId: adminId, nameTh: "ม.2", nameEn: "U2", logoUrl: "", palette: "green", theme: "light", fontFamily: "sarabun", fontSize: "medium" });
 
     const t = await prisma.tenant.findUniqueOrThrow({ where: { id: core.tenantId } });
     expect(t.settings).toMatchObject({ palette: "green", futureFeature: { foo: "bar" } });

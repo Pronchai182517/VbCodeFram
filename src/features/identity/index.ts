@@ -9,6 +9,7 @@ export { loginSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordS
 export type { UserListItem } from "./_internal/services/user.service";
 export type { RoleItem } from "./_internal/services/role.service";
 export type { RoleAssignment, ListUsersQuery } from "./_internal/validations/users";
-export type { TenantSettings } from "./_internal/services/tenant.service";
+export type { TenantSettings, BrandText } from "./_internal/services/tenant.service";
+export { BRAND_NAME_MAX, BRAND_TAGLINE_MAX } from "./_internal/validations/brand-text";
 export { LOGO_MAX_BYTES, LOGO_MIME_TYPES, LOGO_ACCEPT, parseLogoDataUrl } from "./_internal/validations/logo";
 export type { LogoMime, ParsedLogo } from "./_internal/validations/logo";

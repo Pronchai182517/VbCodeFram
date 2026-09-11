@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getT } from "@/i18n/server";
-import { auth, resolveBrandingLogo } from "@/features/identity/server";
+import { auth, resolveBrandingLogo, resolveBrandText } from "@/features/identity/server";
+import { getLocaleCookie } from "@/shared/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Newspaper, Users, GraduationCap, CalendarDays, FileText, LogIn, LayoutDashboard, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,10 @@ import { Button } from "@/components/ui/button";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const t = await getT();
   const session = await auth().catch(() => null);
-  const logo = await resolveBrandingLogo();
+  const [logo, brand, cookieLocale] = await Promise.all([resolveBrandingLogo(), resolveBrandText(), getLocaleCookie()]);
+  const en = cookieLocale === "en";
+  const brandName = ((en ? brand?.nameEn : brand?.nameTh) || brand?.nameTh || "").trim() || t("app.name");
+  const brandTagline = ((en ? brand?.taglineEn : brand?.taglineTh) || brand?.taglineTh || "").trim() || t("app.tagline");
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">
@@ -20,17 +24,17 @@ export default async function PortalLayout({ children }: { children: React.React
               {logo.hasLogo ? (
                 // โลโก้มาจาก route handler ของระบบเอง จึงไม่ผ่าน next/image
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo.url} alt={t("app.name")} className="h-full w-full object-contain" />
+                <img src={logo.url} alt={brandName} className="h-full w-full object-contain" />
               ) : (
                 <Building2 className="h-5 w-5" />
               )}
             </div>
             <div>
               <div className="font-bold tracking-tight text-base sm:text-lg leading-tight group-hover:text-primary transition-colors">
-                {t("app.name")}
+                {brandName}
               </div>
               <div className="text-xs text-muted-foreground hidden sm:block">
-                {t("app.tagline")}
+                {brandTagline}
               </div>
             </div>
           </Link>
@@ -107,10 +111,10 @@ export default async function PortalLayout({ children }: { children: React.React
             <div className="md:col-span-2 space-y-3">
               <div className="font-bold text-foreground text-base flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-primary" />
-                {t("app.name")}
+                {brandName}
               </div>
               <p className="max-w-md text-xs sm:text-sm leading-relaxed">
-                {t("app.tagline")} — ระบบบริหารจัดการและบริการดิจิทัลคณะ ครอบคลุมงานวิชาการ การวิจัย และการสื่อสารประชาสัมพันธ์
+                {brandTagline} — ระบบบริหารจัดการและบริการดิจิทัลคณะ ครอบคลุมงานวิชาการ การวิจัย และการสื่อสารประชาสัมพันธ์
               </p>
             </div>
             <div>
@@ -166,7 +170,7 @@ export default async function PortalLayout({ children }: { children: React.React
           </div>
           <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
             <div>
-              © {new Date().getFullYear()} {t("app.name")}. All rights reserved.
+              © {new Date().getFullYear()} {brandName}. All rights reserved.
             </div>
             <div className="flex items-center gap-4">
               <span>Faculty Information System</span>

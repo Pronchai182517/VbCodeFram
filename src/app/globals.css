@@ -69,3 +69,95 @@
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground; }
 }
+
+/* ═══ Appearance: Theme, Font, Font Size (from tenant settings) ═══ */
+
+/* Dark theme — inverts Liyon base variables */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0f1117;
+  --foreground: #e8eaed;
+  --text: #e8eaed;
+  --text-2: #a0a4ab;
+  --text-muted: #6b7280;
+  --card: #1a1d27;
+  --card-foreground: #e8eaed;
+  --popover: #1a1d27;
+  --popover-foreground: #e8eaed;
+  --muted: #1f2233;
+  --muted-foreground: #9ca3af;
+  --accent: #1f2233;
+  --accent-foreground: #e8eaed;
+  --border: #2a2e3d;
+  --input: #2a2e3d;
+  --ring: var(--brand);
+  --secondary: #1f2233;
+  --secondary-foreground: #e8eaed;
+  --destructive: #ef4444;
+  --glass: rgba(255,255,255,.04);
+  --glass-strong: rgba(255,255,255,.08);
+  --glass-border: rgba(255,255,255,.1);
+  --ink-band-muted: #9ca3af;
+  --success-bg: rgba(16,185,129,.12);
+  --success-ink: #34d399;
+  --warning-bg: rgba(245,158,11,.12);
+  --warning-ink: #fbbf24;
+  --danger-bg: rgba(239,68,68,.12);
+  --danger-ink: #f87171;
+  --info-bg: rgba(59,130,246,.12);
+  --info-ink: #60a5fa;
+  --bg-light: #0f1117;
+}
+[data-theme="dark"] .bg { background: linear-gradient(135deg, #0a0d14 0%, #111525 50%, #0f1117 100%) !important; }
+
+/* Auto theme — follow OS preference */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    color-scheme: dark;
+    --background: #0f1117;
+    --foreground: #e8eaed;
+    --text: #e8eaed;
+    --text-2: #a0a4ab;
+    --text-muted: #6b7280;
+    --card: #1a1d27;
+    --card-foreground: #e8eaed;
+    --popover: #1a1d27;
+    --popover-foreground: #e8eaed;
+    --muted: #1f2233;
+    --muted-foreground: #9ca3af;
+    --accent: #1f2233;
+    --accent-foreground: #e8eaed;
+    --border: #2a2e3d;
+    --input: #2a2e3d;
+    --ring: var(--brand);
+    --secondary: #1f2233;
+    --secondary-foreground: #e8eaed;
+    --destructive: #ef4444;
+    --glass: rgba(255,255,255,.04);
+    --glass-strong: rgba(255,255,255,.08);
+    --glass-border: rgba(255,255,255,.1);
+    --ink-band-muted: #9ca3af;
+    --success-bg: rgba(16,185,129,.12);
+    --success-ink: #34d399;
+    --warning-bg: rgba(245,158,11,.12);
+    --warning-ink: #fbbf24;
+    --danger-bg: rgba(239,68,68,.12);
+    --danger-ink: #f87171;
+    --info-bg: rgba(59,130,246,.12);
+    --info-ink: #60a5fa;
+    --bg-light: #0f1117;
+  }
+  [data-theme="auto"] .bg { background: linear-gradient(135deg, #0a0d14 0%, #111525 50%, #0f1117 100%) !important; }
+}
+
+/* Font Family */
+[data-font="sarabun"]   { --font-body: 'Sarabun', var(--font-sarabun, sans-serif); }
+[data-font="ibm-plex"]  { --font-body: 'IBM Plex Sans Thai', sans-serif; }
+[data-font="noto-sans"]  { --font-body: 'Noto Sans Thai', sans-serif; }
+[data-font="prompt"]     { --font-body: 'Prompt', sans-serif; }
+[data-font]:not([data-font="sarabun"]) body { font-family: var(--font-body) !important; }
+
+/* Font Size */
+[data-font-size="small"]  { font-size: 14px; }
+[data-font-size="medium"] { font-size: 16px; }
+[data-font-size="large"]  { font-size: 18px; }

@@ -9,12 +9,16 @@ import {
   listPublicStaffProfiles,
 } from "@/features/personnel/server";
 import { listResources } from "@/features/booking/server";
+import { resolveBrandText } from "@/features/identity/server";
 import { PortalHomeClient } from "./_components/portal-home-client";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getT();
+  // ชื่อบนแท็บเบราว์เซอร์ตามข้อความที่องค์กรตั้งไว้ (ถอยไปใช้ค่าตั้งต้นถ้ายังไม่ได้ตั้ง)
+  const [t, brand] = await Promise.all([getT(), resolveBrandText()]);
+  const name = brand?.nameTh?.trim() || t("app.name");
+  const tagline = brand?.taglineTh?.trim() || t("app.tagline");
   return {
-    title: `${t("app.name")} | ${t("app.tagline")}`,
+    title: `${name} | ${tagline}`,
     description: "ระบบสารสนเทศและบริการดิจิทัล คณะวิทยาศาสตร์และเทคโนโลยีสารสนเทศ - ข่าวสาร ทำเนียบบุคลากร หลักสูตร คำร้องออนไลน์ และระบบจองทรัพยากร",
   };
 }

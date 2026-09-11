@@ -9,3 +9,4 @@ export { listUsersAction, listRolesForPickerAction, createUserAction, updateUser
 export { listRolesAction, listPermissionsAction, createRoleAction, updateRoleAction, deleteRoleAction } from "./_internal/actions/roles.actions";
 export { getSettingsAction, updateSettingsAction } from "./_internal/actions/settings.actions";
 export { updateLogoAction, removeLogoAction } from "./_internal/actions/logo.actions";
+export { updateBrandTextAction } from "./_internal/actions/brand-text.actions";

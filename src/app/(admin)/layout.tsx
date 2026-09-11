@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { useSidebarStore } from "@/components/layout/sidebar-store";
 import { getActiveNavChain } from "@/components/layout/sidebar-nav";
 import { useAppSession } from "@/hooks/use-session";
+import { useBranding } from "@/components/providers/branding-provider";
 import { useT, useLocale } from "@/shared/lib/i18n/client";
 import { localizedName } from "@/shared/lib/format";
 import { hasPermission, P } from "@/features/identity";
@@ -19,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const locale = useLocale();
   const tail = useBreadcrumbTailItems();
   const { status, user, roles, permissions, isSuperAdmin } = useAppSession();
+  const brand = useBranding();
   const { collapsed, toggleCollapsed } = useSidebarStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [prev, setPrev] = useState(pathname);
@@ -44,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminShell
-      brandName={t("app.name")} brandTagline={t("app.tagline")} brandHref="/dashboard" brandLogoUrl="/api/branding/logo"
+      brandName={brand.name ?? t("app.name")} brandTagline={brand.tagline ?? t("app.tagline")} brandHref="/dashboard" brandLogoUrl="/api/branding/logo"
       breadcrumb={breadcrumb} breadcrumbLabel={t("common.breadcrumb")}
       roleLabel={roles[0] ? localizedName(roles[0], locale) : null}
       languageSwitcher={<LanguageSwitcher className="lang" />}

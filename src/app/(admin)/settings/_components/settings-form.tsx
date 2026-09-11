@@ -8,8 +8,9 @@ import { useT } from "@/shared/lib/i18n/client";
 import type { PaletteId } from "@/shared/lib/palette";
 import type { TenantSettings } from "@/features/identity";
 import { updateSettingsAction } from "@/features/identity/actions";
+import { LogoUploader } from "./logo-uploader";
 
-export function SettingsForm({ initial }: { initial: TenantSettings }) {
+export function SettingsForm({ initial, logoUrl }: { initial: TenantSettings; logoUrl: string | null }) {
   const t = useT();
   const router = useRouter();
   const [form, setForm] = useState({ nameTh: initial.nameTh, nameEn: initial.nameEn, logoUrl: initial.logoUrl ?? "", palette: initial.palette as PaletteId });
@@ -38,6 +39,7 @@ export function SettingsForm({ initial }: { initial: TenantSettings }) {
             <LiyonField label={t("settings.logoUrl")} htmlFor="s-logo" hint={t("common.optional")} error={errors.logoUrl?.[0]}><input id="s-logo" type="url" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} /></LiyonField>
           </div>
         </LiyonCard>
+        <LogoUploader logoUrl={logoUrl} />
         <LiyonCard>
           <h2>{t("settings.brandTitle")}</h2>
           <p>{t("settings.brandDesc")}</p>

@@ -6,6 +6,7 @@ const PUBLIC_PREFIXES = [
   "/reset-password/",
   "/verify-email/",
   "/api/auth/",
+  "/api/branding/",   // โลโก้องค์กร — หน้า portal/login ที่ยังไม่มีเซสชันต้องโหลดได้
   "/_next/",
   "/favicon.ico",
   "/news",

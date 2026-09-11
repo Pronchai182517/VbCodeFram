@@ -26,6 +26,11 @@ model Tenant {
   nameTh    String   @map("name_th") @db.VarChar(255)
   nameEn    String   @map("name_en") @db.VarChar(255)
   logoUrl   String?  @map("logo_url") @db.VarChar(500)
+  /// โลโก้ที่อัปโหลดเอง — เก็บไบต์ไว้ในฐานข้อมูล (≤200KB) เสิร์ฟผ่าน /api/branding/logo
+  /// เก็บในฐานข้อมูลเพราะคอนเทนเนอร์ไม่มี volume สำหรับไฟล์อัปโหลด และไฟล์จะติดไปกับ backup ของฐานข้อมูลด้วย
+  logoData      Bytes?    @map("logo_data")
+  logoMime      String?   @map("logo_mime") @db.VarChar(30)
+  logoUpdatedAt DateTime? @map("logo_updated_at") @db.Timestamptz()
   /// { palette?: "blue"|"coral"|"pink"|"green"|"purple" }
   settings  Json     @default("{}") @db.JsonB
   isActive  Boolean  @default(true) @map("is_active")

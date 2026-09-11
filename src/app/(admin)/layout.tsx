@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminShell
-      brandName={t("app.name")} brandTagline={t("app.tagline")} brandHref="/dashboard"
+      brandName={t("app.name")} brandTagline={t("app.tagline")} brandHref="/dashboard" brandLogoUrl="/api/branding/logo"
       breadcrumb={breadcrumb} breadcrumbLabel={t("common.breadcrumb")}
       roleLabel={roles[0] ? localizedName(roles[0], locale) : null}
       languageSwitcher={<LanguageSwitcher className="lang" />}

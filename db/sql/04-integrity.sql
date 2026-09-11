@@ -51,14 +51,18 @@ CREATE OR REPLACE FUNCTION security.log_change() RETURNS trigger
   SET search_path = pg_catalog, public, security
 AS $$
 DECLARE
-  before_j jsonb := CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN security.redact(to_jsonb(OLD)) END;
-  after_j  jsonb := CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN security.redact(to_jsonb(NEW)) END;
+  -- เทียบค่า "ก่อนปิดบัง" เพื่อหาว่าคอลัมน์ไหนเปลี่ยนจริง แล้วค่อยปิดบังตอนเก็บลง log
+  -- (ถ้าเทียบหลังปิดบัง การเปลี่ยนรหัสผ่านจะมองไม่เห็นเลย เพราะทั้งก่อนและหลังเป็น '[redacted]' เท่ากัน)
+  raw_before jsonb := CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) END;
+  raw_after  jsonb := CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) END;
+  before_j jsonb := security.redact(raw_before);
+  after_j  jsonb := security.redact(raw_after);
   cols     text[];
 BEGIN
   IF TG_OP = 'UPDATE' THEN
     SELECT array_agg(key ORDER BY key) INTO cols
-      FROM jsonb_each(after_j) n
-     WHERE n.value IS DISTINCT FROM before_j -> n.key;
+      FROM jsonb_each(raw_after) n
+     WHERE n.value IS DISTINCT FROM raw_before -> n.key;
     IF cols IS NULL OR cols = ARRAY['updated_at'] THEN
       RETURN NULL;  -- แก้แค่ timestamp ไม่ต้องบันทึก
     END IF;

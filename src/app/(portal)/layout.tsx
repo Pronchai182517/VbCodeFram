@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getT } from "@/i18n/server";
-import { auth } from "@/features/identity/server";
+import { auth, resolveBrandingLogo } from "@/features/identity/server";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Newspaper, Users, GraduationCap, CalendarDays, FileText, LogIn, LayoutDashboard, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const t = await getT();
   const session = await auth().catch(() => null);
+  const logo = await resolveBrandingLogo();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">
@@ -15,8 +16,14 @@ export default async function PortalLayout({ children }: { children: React.React
       <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl transition-transform group-hover:scale-105 border border-primary/20">
-              <Building2 className="h-5 w-5" />
+            <div className="h-10 w-10 overflow-hidden rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl transition-transform group-hover:scale-105 border border-primary/20">
+              {logo.hasLogo ? (
+                // โลโก้มาจาก route handler ของระบบเอง จึงไม่ผ่าน next/image
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo.url} alt={t("app.name")} className="h-full w-full object-contain" />
+              ) : (
+                <Building2 className="h-5 w-5" />
+              )}
             </div>
             <div>
               <div className="font-bold tracking-tight text-base sm:text-lg leading-tight group-hover:text-primary transition-colors">

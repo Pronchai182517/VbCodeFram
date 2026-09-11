@@ -16,11 +16,27 @@
 \set ON_ERROR_STOP on
 
 CREATE OR REPLACE FUNCTION app.current_tenant_id() RETURNS uuid
-  LANGUAGE sql STABLE
-  SET search_path = pg_catalog
-AS $$
-  SELECT NULLIF(current_setting('app.tenant_id', true), '')::uuid
-$$;
+  LANGUAGE plpgsql STABLE SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+DECLARE
+  raw_id   text := current_setting('app.tenant_id', true);
+  raw_code text := current_setting('app.tenant_code', true);
+  result   uuid;
+BEGIN
+  -- 1) แอปกำหนด uuid มาเองต่อ transaction (ใช้ตอนทำหลายองค์กร) → ใช้ค่านั้นก่อน
+  IF raw_id IS NOT NULL AND raw_id <> '' THEN
+    RETURN raw_id::uuid;
+  END IF;
+  -- 2) ไม่งั้นใช้ "รหัสองค์กร" ที่ผูกไว้กับ role แล้วแปลงเป็น uuid ให้ตอนใช้งาน
+  --    ผูกด้วยรหัสไม่ใช่ uuid เพราะ seed ใหม่ทำให้ uuid เปลี่ยน แล้วแอปจะมองไม่เห็นข้อมูลทั้งหมดเงียบ ๆ
+  IF raw_code IS NULL OR raw_code = '' THEN
+    RETURN NULL;          -- ไม่มีทั้งสองค่า → คืน NULL → ทุก policy เป็นเท็จ → ไม่เห็นข้อมูลใด (fail closed)
+  END IF;
+  SELECT t.id INTO result FROM public.tenants t WHERE t.code = raw_code;
+  RETURN result;
+END
+$fn$;
 ALTER FUNCTION app.current_tenant_id() OWNER TO vibe_owner;
 REVOKE ALL ON FUNCTION app.current_tenant_id() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION app.current_tenant_id() TO vibe_app, vibe_readonly;
@@ -83,17 +99,20 @@ CREATE POLICY tenant_isolation ON public.approval_routes
   WITH CHECK (EXISTS (SELECT 1 FROM public.document_requests d WHERE d.id = approval_routes.document_request_id));
 
 -- ── ผูกองค์กรตั้งต้นให้ role vibe_app ─────────────────────────────────────
--- ใช้ค่าองค์กรหลัก (code = DEMO) ที่ seed สร้างไว้ ถ้ายังไม่มีจะข้ามและเตือน
+-- ผูกด้วย "รหัสองค์กร" (code) ไม่ใช่ uuid — seed ใหม่ทีไร uuid เปลี่ยนทุกที
+-- ถ้าผูกด้วย uuid แล้ว seed ใหม่ แอปจะมองไม่เห็นข้อมูลทั้งระบบโดยไม่มีข้อผิดพลาดใด ๆ ให้เห็น
 DO $$
-DECLARE tid uuid;
+DECLARE
+  v_code text := COALESCE(NULLIF(current_setting('vibe.tenant_code', true), ''), 'DEMO');
 BEGIN
-  SELECT id INTO tid FROM public.tenants WHERE code = 'DEMO';
-  IF tid IS NULL THEN
-    RAISE WARNING 'ยังไม่มีองค์กร DEMO — ข้ามการตั้งค่า app.tenant_id (รัน seed ก่อนแล้วรันไฟล์นี้ซ้ำ)';
+  EXECUTE format('ALTER ROLE vibe_app IN DATABASE vibe_framework SET app.tenant_code = %L', v_code);
+  -- ล้างค่าที่ผูกด้วย uuid แบบเดิมทิ้ง (ถ้ามี) ไม่ให้ค่าเก่าที่ค้างอยู่มาทับค่าใหม่
+  EXECUTE 'ALTER ROLE vibe_app IN DATABASE vibe_framework RESET app.tenant_id';
+  IF NOT EXISTS (SELECT 1 FROM public.tenants t WHERE t.code = v_code) THEN
+    RAISE WARNING 'ยังไม่มีองค์กรรหัส % ในฐานข้อมูล — ผูกไว้แล้วแต่แอปจะยังไม่เห็นข้อมูลจนกว่าจะ seed', v_code;
   ELSE
-    EXECUTE format('ALTER ROLE vibe_app IN DATABASE vibe_framework SET app.tenant_id = %L', tid::text);
-    RAISE NOTICE 'ผูก app.tenant_id ของ role vibe_app กับองค์กร DEMO (%) แล้ว', tid;
+    RAISE NOTICE 'ผูก role vibe_app กับองค์กรรหัส % แล้ว', v_code;
   END IF;
 END $$;
 
-\echo '✅ 03 · RLS ทำงานบน 7 ตาราง (tenants, user_tenants, roles, user_roles, role_permissions, audit_logs, sample_items)'
+\echo '✅ 03 · RLS ทำงานครบทุกตารางที่มี tenant_id (+ ตารางลูกที่สืบผ่านตารางแม่)'

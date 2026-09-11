@@ -23,20 +23,35 @@ check() {  # check "ชื่อการทดสอบ" "ค่าที่ค
 echo "🔒 ตรวจชั้นความปลอดภัยของฐานข้อมูล $DB_NAME"
 echo
 echo "── 1. Row Level Security: กั้นข้อมูลข้ามองค์กร"
-check "แอปเห็นองค์กรเดียว (ในฐานมี 2)" "1" \
+
+# สร้างองค์กรทดสอบชั่วคราวด้วยสิทธิ์ superuser แล้วพิสูจน์ว่าแอปมองไม่เห็น/เขียนไม่ได้
+OTHER_ID="$(docker exec -i "$DB_CONTAINER" psql -X -A -t -q -U postgres -d "$DB_NAME" -c "
+  INSERT INTO tenants (id, code, name_th, name_en, updated_at)
+  VALUES (gen_random_uuid(), 'ZZ_RLS_PROBE', 'องค์กรทดสอบ RLS', 'RLS probe tenant', now())
+  ON CONFLICT (code) DO UPDATE SET name_th = EXCLUDED.name_th RETURNING id")"
+docker exec -i "$DB_CONTAINER" psql -X -q -U postgres -d "$DB_NAME" -c "
+  INSERT INTO sample_items (id, tenant_id, title, updated_at)
+  VALUES ('11111111-1111-4111-8111-111111111111', '$OTHER_ID', 'ข้อมูลลับขององค์กรอื่น', now())
+  ON CONFLICT (id) DO NOTHING" >/dev/null 2>&1
+
+TOTAL_TENANTS="$(docker exec -i "$DB_CONTAINER" psql -X -A -t -q -U postgres -d "$DB_NAME" -c 'SELECT count(*) FROM tenants')"
+check "แอปเห็นองค์กรเดียว (ในฐานมีทั้งหมด $TOTAL_TENANTS)" "1" \
   "$(as_role vibe_app "$DB_APP_PASSWORD" 'SELECT count(*) FROM tenants')"
+check "องค์กรที่แอปเห็นคือองค์กรที่ผูกไว้กับ role" "t" \
+  "$(as_role vibe_app "$DB_APP_PASSWORD" 'SELECT (SELECT id FROM tenants) = app.current_tenant_id()')"
 check "แอปมองไม่เห็นข้อมูลขององค์กรอื่น" "0" \
-  "$(as_role vibe_app "$DB_APP_PASSWORD" "SELECT count(*) FROM sample_items WHERE title LIKE 'ACME%'")"
-check "แอปมองไม่เห็นบทบาทขององค์กรอื่น" "8" \
-  "$(as_role vibe_app "$DB_APP_PASSWORD" 'SELECT count(*) FROM roles')"
-ACME_ID="$(docker exec -i "$DB_CONTAINER" psql -X -A -t -q -U postgres -d "$DB_NAME" -c "SELECT id FROM tenants WHERE code='ACME'")"
+  "$(as_role vibe_app "$DB_APP_PASSWORD" "SELECT count(*) FROM sample_items WHERE tenant_id = '$OTHER_ID'")"
+check "แอปมองไม่เห็นบทบาทขององค์กรอื่น" "0" \
+  "$(as_role vibe_app "$DB_APP_PASSWORD" "SELECT count(*) FROM roles WHERE tenant_id <> app.current_tenant_id()")"
 check "เขียนข้อมูลขององค์กรอื่นไม่ได้ (WITH CHECK)" "row-level security" \
-  "$(as_role vibe_app "$DB_APP_PASSWORD" "INSERT INTO sample_items (id, tenant_id, title, updated_at) VALUES (gen_random_uuid(), '$ACME_ID', 'ทดสอบเจาะข้ามองค์กร', now())")"
+  "$(as_role vibe_app "$DB_APP_PASSWORD" "INSERT INTO sample_items (id, tenant_id, title, updated_at) VALUES (gen_random_uuid(), '$OTHER_ID', 'ทดสอบเจาะข้ามองค์กร', now())")"
 check "เขียนข้อมูลขององค์กรตัวเองได้" "1" \
   "$(as_role vibe_app "$DB_APP_PASSWORD" "WITH ins AS (INSERT INTO sample_items (id, tenant_id, title, updated_at) VALUES (gen_random_uuid(), app.current_tenant_id(), 'ทดสอบเขียนของตัวเอง', now()) RETURNING 1) SELECT count(*) FROM ins")"
+check "แอปมองเห็นข้อมูลขององค์กรตัวเอง (ไม่ใช่ศูนย์แถว)" "t" \
+  "$(as_role vibe_app "$DB_APP_PASSWORD" 'SELECT count(*) > 0 FROM sample_items')"
 as_role vibe_app "$DB_APP_PASSWORD" "DELETE FROM sample_items WHERE title = 'ทดสอบเขียนของตัวเอง'" >/dev/null
+docker exec -i "$DB_CONTAINER" psql -X -q -U postgres -d "$DB_NAME" -c "DELETE FROM tenants WHERE code = 'ZZ_RLS_PROBE'" >/dev/null 2>&1
 
-echo
 echo "── 2. สิทธิ์ของบัญชีแอป (least privilege)"
 check "ลบร่องรอยการใช้งานไม่ได้" "denied" \
   "$(as_role vibe_app "$DB_APP_PASSWORD" 'DELETE FROM audit_logs WHERE true')"
@@ -59,10 +74,11 @@ echo
 echo "── 3. บัญชีสำหรับรายงาน (vibe_readonly)"
 check "อ่านตารางผู้ใช้จริงไม่ได้" "denied" \
   "$(as_role vibe_readonly "$DB_READONLY_PASSWORD" 'SELECT count(*) FROM public.users')"
-check "อ่าน view รายงานได้" "22" \
+USERS_TOTAL="$(docker exec -i "$DB_CONTAINER" psql -X -A -t -q -U postgres -d "$DB_NAME" -c 'SELECT count(*) FROM users')"
+check "อ่าน view รายงานได้ครบทุกผู้ใช้ ($USERS_TOTAL คน)" "$USERS_TOTAL" \
   "$(as_role vibe_readonly "$DB_READONLY_PASSWORD" 'SELECT count(*) FROM report.users_masked')"
 check "อีเมลในรายงานถูกปิดบัง" "a***n@app.local" \
-  "$(as_role vibe_readonly "$DB_READONLY_PASSWORD" "SELECT email_masked FROM report.users_masked WHERE name='ผู้ดูแลสูงสุด'")"
+  "$(as_role vibe_readonly "$DB_READONLY_PASSWORD" "SELECT email_masked FROM report.users_masked WHERE email_masked LIKE 'a%@app.local' LIMIT 1")"
 check "เขียนตารางจริงไม่ได้" "permission denied" \
   "$(as_role vibe_readonly "$DB_READONLY_PASSWORD" "INSERT INTO public.sample_items (id, tenant_id, title, updated_at) VALUES (gen_random_uuid(), gen_random_uuid(), 'x', now())")"
 

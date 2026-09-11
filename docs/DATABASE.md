@@ -121,12 +121,23 @@ CREATE POLICY tenant_isolation ON sample_items FOR ALL TO vibe_app
   WITH CHECK (tenant_id = app.current_tenant_id());
 ```
 
-องค์กรปัจจุบันมาจากตัวแปร session `app.tenant_id` ซึ่งผูกไว้กับ role `vibe_app`
-(`ALTER ROLE vibe_app IN DATABASE vibe_framework SET app.tenant_id = '<uuid ขององค์กร DEMO>'`)
+องค์กรปัจจุบันมาจากฟังก์ชัน `app.current_tenant_id()` ซึ่งหาค่าตามลำดับนี้:
 
-- **ไม่มีค่า → เห็นศูนย์แถว** (fail closed) ไม่ใช่เห็นทั้งหมด
+1. ตัวแปร session `app.tenant_id` — ถ้าแอปกำหนดมาเองต่อ transaction (ใช้ตอนทำหลายองค์กร)
+2. ตัวแปร `app.tenant_code` ที่ **ผูกไว้กับ role `vibe_app`** แล้วแปลงรหัสองค์กรเป็น uuid ให้ตอนใช้งาน
+   (`ALTER ROLE vibe_app IN DATABASE vibe_framework SET app.tenant_code = 'DEMO'`)
+3. ไม่มีทั้งสองค่า → คืน `NULL` → ทุก policy เป็นเท็จ → **เห็นศูนย์แถว** (fail closed) ไม่ใช่เห็นทั้งหมด
+
+> [!IMPORTANT]
+> ที่ผูกด้วย **รหัสองค์กร** ไม่ใช่ uuid เพราะทุกครั้งที่ seed ใหม่ uuid ขององค์กรจะเปลี่ยน
+> ถ้าผูกด้วย uuid ไว้ แอปจะมองไม่เห็นข้อมูลทั้งระบบเงียบ ๆ (ทุกหน้าว่างเปล่าโดยไม่มี error)
+> ด้วยเหตุนี้ service `migrate` จึงมีด่านตรวจตอนสตาร์ต — ถ้าบัญชีแอปมองไม่เห็นองค์กรใดเลย จะ **ล้มทันที**
+> พร้อมบอกวิธีแก้ (`./db/setup.sh --security-only`) แทนที่จะปล่อยให้แอปขึ้นมาแบบไม่มีข้อมูล
+
 - อ่านข้ามองค์กรไม่ได้ และ `INSERT`/`UPDATE` ใส่ `tenant_id` ขององค์กรอื่นก็ถูกปฏิเสธด้วย `WITH CHECK`
 - แอปกรอง `tenantId` จาก session ในโค้ดอยู่แล้ว — ชั้นนี้คือตาข่ายรับเวลาโค้ดพลาด
+- เปลี่ยนองค์กรที่ผูกไว้:
+  `docker exec -i postgres-db psql -U postgres -d vibe_framework -c "ALTER ROLE vibe_app IN DATABASE vibe_framework SET app.tenant_code = 'CODE'"`
 
 > **ถ้าจะให้แอปเดียวรองรับหลายองค์กรจริง ๆ** ต้องเลิกผูกค่าไว้กับ role แล้วให้แอปสั่ง
 > `SET LOCAL app.tenant_id = '<uuid>'` ต้นทุก transaction แทน (ทำใน Prisma ผ่าน `$transaction` + `$executeRaw`)
@@ -180,7 +191,7 @@ docker exec -i postgres-db pg_restore -h 127.0.0.1 -U vibe_owner -d vibe_framewo
 ./db/setup.sh                    # ติดตั้งครบ: role → database → migrate → seed → ชั้นความปลอดภัย
 ./db/setup.sh --security-only    # ลงชั้นความปลอดภัยใหม่ (ใช้หลังเพิ่ม migration)
 ./db/setup.sh --no-seed          # ติดตั้งโดยไม่ seed ข้อมูลตัวอย่าง
-./db/verify-security.sh          # ตรวจว่าชั้นความปลอดภัยยังทำงานครบ (23 การทดสอบ)
+./db/verify-security.sh          # ตรวจว่าชั้นความปลอดภัยยังทำงานครบ (25 การทดสอบ)
 ./db/backup.sh                   # สำรองข้อมูลทันที
 
 # เปิด psql ในฐานะบัญชีต่าง ๆ
@@ -191,9 +202,11 @@ docker exec -it -e PGPASSWORD=... postgres-db psql -h 127.0.0.1 -U vibe_app -d v
 ### เมื่อเพิ่ม feature/ตารางใหม่
 1. แก้ `prisma/schema.prisma` แล้วสร้าง migration ตามปกติ
 2. `docker compose --env-file .env.docker run --rm migrate` (migrate ด้วย role เจ้าของ)
-3. `./db/setup.sh --security-only` — ตารางใหม่ได้สิทธิ์ DML อัตโนมัติจาก `ALTER DEFAULT PRIVILEGES` แล้ว
-   แต่ถ้าตารางใหม่มีคอลัมน์ `tenant_id` ให้เพิ่มชื่อตารางลงในลิสต์ของ `db/sql/03-rls.sql` ก่อน เพื่อให้ถูก RLS คุมด้วย
-4. `./db/verify-security.sh`
+3. ถ้าตารางใหม่มีคอลัมน์ `tenant_id` ให้เพิ่มชื่อตารางลงในลิสต์ของ `db/sql/03-rls.sql`
+   (ตารางลูกที่ไม่มี `tenant_id` ให้เพิ่ม policy แบบ `EXISTS` อ้างตารางแม่ ดูตัวอย่าง `user_roles` ในไฟล์เดียวกัน)
+4. `./db/setup.sh --security-only` — สิทธิ์ DML ของตารางใหม่มาอัตโนมัติจาก `ALTER DEFAULT PRIVILEGES` อยู่แล้ว
+   คำสั่งนี้จะลง RLS policy ให้ครบ
+5. `./db/verify-security.sh`
 
 ---
 

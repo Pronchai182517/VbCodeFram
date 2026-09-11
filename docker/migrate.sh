@@ -47,16 +47,24 @@ if [ -n "${BOOTSTRAP_ADMIN_EMAIL:-}" ] && [ -n "${BOOTSTRAP_ADMIN_PASSWORD:-}" ]
   DATABASE_URL="$MIGRATE_URL" npx tsx prisma/bootstrap.ts
 fi
 
-echo "🔐 ตรวจว่าบัญชีของแอป (vibe_app) เชื่อมต่อได้และถูก RLS คุมอยู่ ..."
+echo "🔐 ตรวจว่าบัญชีของแอป (vibe_app) เชื่อมต่อได้และมองเห็นข้อมูลขององค์กรตัวเอง ..."
 node -e '
 const { Client } = require("pg");
 (async () => {
   const c = new Client({ connectionString: process.env.DATABASE_URL });
   await c.connect();
   const t = await c.query("SELECT app.current_tenant_id() AS tenant").catch(() => null);
-  const n = await c.query("SELECT count(*)::int AS n FROM tenants").catch(() => ({ rows: [{ n: "?" }] }));
-  console.log(`   ต่อได้ · องค์กรที่มองเห็น = ${n.rows[0].n} · app.tenant_id = ${t ? t.rows[0].tenant : "(ยังไม่ตั้ง)"}`);
+  const n = await c.query("SELECT count(*)::int AS n FROM tenants");
+  const tenant = t ? t.rows[0].tenant : null;
+  console.log(`   ต่อได้ · องค์กรที่มองเห็น = ${n.rows[0].n} · app.current_tenant_id() = ${tenant ?? "(ไม่มีค่า)"}`);
   await c.end();
+  // ด่านนี้สำคัญ: ถ้า RLS ผูกไว้กับองค์กรที่ไม่มีอยู่จริง (เช่น seed ใหม่แล้วรหัสองค์กรไม่ตรง)
+  // แอปจะขึ้นได้ตามปกติแต่ทุกหน้าว่างเปล่าโดยไม่มี error ให้เห็น — ต้องล้มตั้งแต่ตรงนี้
+  if (n.rows[0].n === 0) {
+    console.error("   ❌ บัญชีแอปมองไม่เห็นองค์กรใดเลย — RLS ผูกกับองค์กรที่ไม่มีอยู่จริง");
+    console.error("      แก้ด้วย: ./db/setup.sh --security-only   (ผูก role กับรหัสองค์กรใหม่อีกครั้ง)");
+    process.exit(1);
+  }
 })().catch((e) => { console.error("   ⚠️  แอปต่อฐานข้อมูลไม่ได้:", e.message); process.exit(1); });
 '
 

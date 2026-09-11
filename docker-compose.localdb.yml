@@ -1,0 +1,46 @@
+# โหมดฐานข้อมูลของตัวเอง (ไม่พึ่งสแตก postgresal) — ใช้เมื่อย้ายโปรเจกต์ไปเครื่องอื่น
+#   docker compose -f docker-compose.yml -f docker-compose.localdb.yml --env-file .env.docker up -d --build
+# ฐานข้อมูลจะอยู่ใน volume `pgdata` ของโปรเจกต์นี้เอง และใช้ role postgres ตรง ๆ (ไม่มีชั้น RLS)
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${LOCALDB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-vibe_framework}
+    ports:
+      - "${LOCALDB_PORT:-5434}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME:-vibe_framework}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - postgres_net
+
+  migrate:
+    environment:
+      DATABASE_URL: postgresql://postgres:${LOCALDB_PASSWORD:-postgres}@db:5432/${DB_NAME:-vibe_framework}
+      MIGRATE_DATABASE_URL: postgresql://postgres:${LOCALDB_PASSWORD:-postgres}@db:5432/${DB_NAME:-vibe_framework}
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    environment:
+      DATABASE_URL: postgresql://postgres:${LOCALDB_PASSWORD:-postgres}@db:5432/${DB_NAME:-vibe_framework}
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  postgres_net:
+    external: false
+    name: vibe-framework_localdb
+
+volumes:
+  pgdata:

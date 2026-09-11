@@ -1,0 +1,19 @@
+[Unit]
+Description=VibeCore Framework — Docker Compose stack (Next.js + Postgres)
+Documentation=file:///path/to/vibe-framework/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/path/to/vibe-framework
+# user unit สั่ง After=docker.service (ซึ่งเป็น system unit) ไม่ได้ จึงรอ docker daemon เองสูงสุด ~2 นาที
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 60); do /usr/bin/docker info >/dev/null 2>&1 && exit 0; sleep 2; done; echo "docker daemon ไม่พร้อม"; exit 1'
+ExecStart=/usr/bin/docker compose --env-file .env.docker up -d --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file .env.docker stop
+# build + migrate + seed ครั้งแรกอาจใช้เวลาหลายนาที
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

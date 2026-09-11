@@ -1,0 +1,18 @@
+# โหมดพัฒนา (hot reload) — ใช้คู่กับ docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# source ถูก bind mount เข้าไป แก้โค้ดแล้วเห็นผลทันที ส่วน node_modules/.next ใช้ของใน container
+services:
+  app:
+    image: vibe-framework-app:dev
+    build:
+      target: dev
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      - /app/src/generated
+    healthcheck:
+      disable: true

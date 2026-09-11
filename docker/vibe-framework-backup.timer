@@ -1,0 +1,11 @@
+[Unit]
+Description=สำรองฐานข้อมูล VibeCore ทุกวันตอนตี 2 ครึ่ง
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+# ถ้าเครื่องปิดอยู่ตอนถึงเวลา ให้รันย้อนหลังหลังบูต
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

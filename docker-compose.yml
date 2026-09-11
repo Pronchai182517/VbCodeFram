@@ -1,0 +1,83 @@
+# VibeCore Framework — แอปเชื่อมกับ PostgreSQL กลางที่รันเป็นคอนเทนเนอร์อยู่แล้ว (โปรเจกต์ postgresal)
+#   docker compose --env-file .env.docker up -d --build     สตาร์ต → http://localhost:3010
+#   docker compose --env-file .env.docker logs -f app       ดู log แอป
+#
+# ฐานข้อมูลไม่ได้อยู่ในไฟล์นี้ — ใช้คอนเทนเนอร์ `postgres-db` ที่รันอยู่แล้ว โดยเข้าผ่าน
+# network `postgresal_postgres_net` (ชื่อโฮสต์ภายใน network คือ `postgres-db` พอร์ต 5432)
+# แอปต่อด้วย role `vibe_app` ที่มีสิทธิ์เท่าที่จำเป็นและถูกบังคับด้วย RLS — ไม่ใช่ superuser postgres
+# ถ้าต้องการฐานข้อมูลของตัวเองแบบแยกขาด ให้ใช้ override:  -f docker-compose.yml -f docker-compose.localdb.yml
+
+x-app-env: &app-env
+  # แอปใช้ role สิทธิ์จำกัด (DML เท่านั้น + RLS) ส่วน migrate ใช้ role เจ้าของ schema
+  DATABASE_URL: postgresql://${DB_APP_USER:-vibe_app}:${DB_APP_PASSWORD:?ต้องตั้ง DB_APP_PASSWORD ใน .env.docker}@${DB_HOST:-postgres-db}:${DB_PORT:-5432}/${DB_NAME:-vibe_framework}
+  AUTH_SECRET: ${AUTH_SECRET:?ต้องตั้ง AUTH_SECRET ใน .env.docker}
+  APP_URL: ${APP_URL:-http://localhost:3010}
+  # ในคอนเทนเนอร์ NextAuth มองเห็นแต่ host ที่ถูก forward เข้ามา จึงต้องบอกให้เชื่อ host นั้น
+  # (ไม่ตั้ง = โยน UntrustedHost ทุกคำขอ) — ถ้าเปิดออกอินเทอร์เน็ตผ่าน reverse proxy ต้องตั้ง APP_URL ให้ตรงโดเมนจริงด้วย
+  AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
+  # ฐาน URL ที่ NextAuth ใช้ประกอบลิงก์ redirect — ไม่ตั้งจะได้ http://0.0.0.0:3010 (ที่อยู่ที่ server bind อยู่) แล้วเบราว์เซอร์เปิดไม่ได้
+  AUTH_URL: ${APP_URL:-http://localhost:3010}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASS: ${SMTP_PASS:-}
+  SMTP_FROM: ${SMTP_FROM:-App <no-reply@example.com>}
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+  MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+  MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-common}
+
+services:
+  # งานครั้งเดียวก่อนแอปสตาร์ต: รอฐานข้อมูล → migrate → seed (ทำงานด้วย role เจ้าของ schema)
+  migrate:
+    image: vibe-framework-migrate:latest
+    build:
+      context: .
+      target: migrator
+    environment:
+      <<: *app-env
+      # role เจ้าของ schema — ใช้เฉพาะตอน migrate/seed เท่านั้น ไม่ได้ให้แอปถือไว้
+      MIGRATE_DATABASE_URL: postgresql://${DB_OWNER_USER:-vibe_owner}:${DB_OWNER_PASSWORD:?ต้องตั้ง DB_OWNER_PASSWORD ใน .env.docker}@${DB_HOST:-postgres-db}:${DB_PORT:-5432}/${DB_NAME:-vibe_framework}
+      DB_HOST: ${DB_HOST:-postgres-db}
+      DB_PORT: ${DB_PORT:-5432}
+      SEED_ON_START: ${SEED_ON_START:-true}
+      SEED_PROFILE: ${SEED_PROFILE:-deep}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+    restart: "no"
+    networks:
+      - postgres_net
+
+  app:
+    # ตั้งชื่อ image ให้ชัด เพื่อไม่ให้ image ของโหมด dev (docker-compose.dev.yml) มาทับ tag เดียวกัน
+    image: vibe-framework-app:prod
+    build:
+      context: .
+      target: runner
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      <<: *app-env
+    ports:
+      - "${APP_PORT:-3010}:3010"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3010/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - postgres_net
+
+networks:
+  # network ของสแตก postgresal (docker network ls → postgresal_postgres_net)
+  postgres_net:
+    external: true
+    name: ${DB_NETWORK:-postgresal_postgres_net}

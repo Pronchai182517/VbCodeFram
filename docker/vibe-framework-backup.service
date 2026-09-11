@@ -1,0 +1,9 @@
+[Unit]
+Description=VibeCore Framework — สำรองฐานข้อมูล vibe_framework
+Documentation=file:///path/to/vibe-framework/docs/DATABASE.md
+
+[Service]
+Type=oneshot
+WorkingDirectory=/path/to/vibe-framework
+ExecStart=/path/to/vibe-framework/db/backup.sh
+TimeoutStartSec=1800

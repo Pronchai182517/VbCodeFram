@@ -1,0 +1,23 @@
+# ไฟล์ที่ไม่ต้องส่งเข้า Docker build context
+node_modules
+.next
+out
+src/generated
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+!.env.docker.example
+test-results
+playwright-report
+e2e/.auth
+coverage
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.superpowers
+.claude
+Dockerfile
+docker-compose*.yml
+.dockerignore

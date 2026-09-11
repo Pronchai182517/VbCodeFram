@@ -1,0 +1,71 @@
+import type { Dictionary } from "@/shared/lib/i18n/translate";
+
+export const MESSAGES: Dictionary = {
+  // Navigation & General
+  "personnel.nav": { th: "อาจารย์และบุคลากร", en: "Faculty & Staff" },
+  "personnel.title": { th: "จัดการทำเนียบบุคลากร", en: "Personnel Directory Management" },
+  "personnel.subtitle": { th: "จัดการรายชื่อคณาจารย์ บุคลากรสายสนับสนุน และโครงสร้างภาควิชา", en: "Manage faculty members, academic staff, and departmental structure" },
+  "personnel.tab.staff": { th: "รายชื่อบุคลากร", en: "Personnel List" },
+  "personnel.tab.department": { th: "ภาควิชา / หน่วยงาน", en: "Departments" },
+
+  // Department
+  "personnel.dept.title": { th: "ภาควิชาและหน่วยงาน", en: "Departments & Divisions" },
+  "personnel.dept.create": { th: "เพิ่มภาควิชา", en: "Add Department" },
+  "personnel.dept.edit": { th: "แก้ไขภาควิชา", en: "Edit Department" },
+  "personnel.dept.delete": { th: "ลบภาควิชา", en: "Delete Department" },
+  "personnel.dept.nameTh": { th: "ชื่อภาควิชา (ไทย)", en: "Department Name (Thai)" },
+  "personnel.dept.nameEn": { th: "ชื่อภาควิชา (อังกฤษ)", en: "Department Name (English)" },
+  "personnel.dept.code": { th: "รหัสภาควิชา", en: "Department Code" },
+  "personnel.dept.orderIndex": { th: "ลำดับการแสดงผล", en: "Display Order" },
+  "personnel.dept.staffCount": { th: "จำนวนบุคลากร", en: "Staff Count" },
+  "personnel.dept.deleteConfirm": { th: "คุณแน่ใจหรือไม่ว่าต้องการลบภาควิชานี้? (ต้องไม่มีบุคลากรสังกัดอยู่)", en: "Are you sure you want to delete this department? (Must have no assigned staff)" },
+
+  // Staff Profile
+  "personnel.staff.create": { th: "เพิ่มข้อมูลบุคลากร", en: "Add Personnel" },
+  "personnel.staff.edit": { th: "แก้ไขข้อมูลบุคลากร", en: "Edit Personnel" },
+  "personnel.staff.delete": { th: "ลบบุคลากร", en: "Delete Personnel" },
+  "personnel.staff.deleteConfirm": { th: "คุณแน่ใจหรือไม่ว่าต้องการลบบุคลากรท่านนี้?", en: "Are you sure you want to delete this personnel profile?" },
+  "personnel.prefixTh": { th: "คำนำหน้า (ไทย)", en: "Title/Prefix (Thai)" },
+  "personnel.prefixEn": { th: "คำนำหน้า (อังกฤษ)", en: "Title/Prefix (English)" },
+  "personnel.firstNameTh": { th: "ชื่อจริง (ไทย)", en: "First Name (Thai)" },
+  "personnel.lastNameTh": { th: "นามสกุล (ไทย)", en: "Last Name (Thai)" },
+  "personnel.firstNameEn": { th: "ชื่อจริง (อังกฤษ)", en: "First Name (English)" },
+  "personnel.lastNameEn": { th: "นามสกุล (อังกฤษ)", en: "Last Name (English)" },
+  "personnel.fullName": { th: "ชื่อ - นามสกุล", en: "Full Name" },
+  "personnel.academicPosition": { th: "ตำแหน่งทางวิชาการ", en: "Academic Position" },
+  "personnel.adminPositionTh": { th: "ตำแหน่งบริหาร (ไทย)", en: "Administrative Position (Thai)" },
+  "personnel.adminPositionEn": { th: "ตำแหน่งบริหาร (อังกฤษ)", en: "Administrative Position (English)" },
+  "personnel.department": { th: "สังกัดภาควิชา/หน่วยงาน", en: "Department / Unit" },
+  "personnel.email": { th: "อีเมลติดต่อ", en: "Contact Email" },
+  "personnel.phone": { th: "เบอร์โทรศัพท์", en: "Phone Number" },
+  "personnel.roomNumber": { th: "ห้องพักอาจารย์ / สถานที่ทำงาน", en: "Office Room" },
+  "personnel.avatarUrl": { th: "URL รูปถ่ายประจำตัว", en: "Avatar URL" },
+  "personnel.bioTh": { th: "ประวัติและผลงาน (ไทย)", en: "Biography & Works (Thai)" },
+  "personnel.bioEn": { th: "ประวัติและผลงาน (อังกฤษ)", en: "Biography & Works (English)" },
+  "personnel.expertise": { th: "ความเชี่ยวชาญ / สาขาวิจัย (คั่นด้วยจุลภาค ,)", en: "Areas of Expertise / Research (comma-separated)" },
+  "personnel.isActive": { th: "สถานะการปฏิบัติงาน", en: "Status" },
+  "personnel.active": { th: "ปฏิบัติงานอยู่", en: "Active" },
+  "personnel.inactive": { th: "ลาศึกษาต่อ/พ้นสภาพ", en: "Inactive" },
+  "personnel.empty": { th: "ไม่พบข้อมูลบุคลากร", en: "No personnel profiles found" },
+  "personnel.save": { th: "บันทึกข้อมูล", en: "Save Profile" },
+  "personnel.cancel": { th: "ยกเลิก", en: "Cancel" },
+  "personnel.createSuccess": { th: "บันทึกข้อมูลบุคลากรเรียบร้อยแล้ว", en: "Personnel profile saved successfully" },
+  "personnel.updateSuccess": { th: "แก้ไขข้อมูลบุคลากรเรียบร้อยแล้ว", en: "Personnel profile updated successfully" },
+  "personnel.deleteSuccess": { th: "ลบข้อมูลบุคลากรเรียบร้อยแล้ว", en: "Personnel profile deleted successfully" },
+
+  // Public Portal Directory
+  "personnel.portal.title": { th: "ทำเนียบคณาจารย์และบุคลากร", en: "Faculty & Staff Directory" },
+  "personnel.portal.subtitle": { th: "ค้นหาข้อมูลคณาจารย์ อาจารย์ที่ปรึกษา บุคลากรสายสนับสนุน และความเชี่ยวชาญเฉพาะทาง", en: "Discover our distinguished professors, advisors, academic staff, and research specialties" },
+  "personnel.portal.allDepartments": { th: "ทุกภาควิชา", en: "All Departments" },
+  "personnel.portal.searchPlaceholder": { th: "ค้นหาตามชื่อ, ความเชี่ยวชาญ, หรืออีเมล...", en: "Search by name, expertise, or email..." },
+  "personnel.portal.advisorTag": { th: "อาจารย์ที่ปรึกษา", en: "Academic Advisor" },
+  "personnel.portal.noResults": { th: "ไม่พบบุคลากรที่ตรงกับเงื่อนไขการค้นหา", en: "No faculty or staff found matching your criteria" },
+  "personnel.portal.viewProfile": { th: "ดูข้อมูลและงานวิจัย", en: "View Profile & Research" },
+  "personnel.portal.expertiseArea": { th: "ความเชี่ยวชาญ:", en: "Expertise:" },
+
+  // Permissions & Roles
+  "roles.module.personnel": { th: "ระบบทำเนียบบุคลากร", en: "Personnel Directory" },
+  "perm.personnel:read": { th: "ดูข้อมูลบุคลากรและภาควิชา", en: "View personnel and departments" },
+  "perm.personnel:manage": { th: "จัดการข้อมูลอาจารย์ เจ้าหน้าที่ และภาควิชา", en: "Manage faculty, staff, and departments" },
+  "perm.personnel:update-self": { th: "แก้ไขประวัติและผลงานตนเอง", en: "Update personal profile" },
+};

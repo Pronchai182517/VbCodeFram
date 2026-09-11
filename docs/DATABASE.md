@@ -82,7 +82,7 @@ VibeCore ใช้ฐานข้อมูล PostgreSQL 17 ที่รัน�
 | `sample_items` | 43 | ข้อมูลโมดูลตัวอย่าง 40 ของ DEMO (มีทั้ง ACTIVE/INACTIVE) + 3 ของ ACME |
 | `audit_logs` | 122 | ร่องรอยย้อนหลัง 60 วัน 14 ชนิดการกระทำ พร้อม before/after และ IP |
 
-สถานะผู้ใช้ที่ seed ไว้ (รหัสผ่านทุกบัญชี: `Passw0rd!vibe`)
+สถานะผู้ใช้ที่ seed ไว้ (รหัสผ่านทุกบัญชีมาจาก `SEED_PASSWORD` ใน `.env.docker` — ถ้าเว้นว่างจะสุ่มใหม่ตอน seed แล้วพิมพ์ลง log ของ service `migrate`)
 
 | บัญชี | สถานะที่ใช้ทดสอบ |
 | --- | --- |

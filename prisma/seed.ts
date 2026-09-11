@@ -4,11 +4,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { seedCore, seedUser } from "./lib/seed-core";
 import { requireDatabaseUrl } from "./lib/require-database-url";
+import { resolveSeedPassword, printSeedPassword } from "./lib/seed-password";
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: requireDatabaseUrl() }) });
 
-/** รหัสผ่านทุกบัญชีตัวอย่าง */
-export const DEV_PASSWORD = "Passw0rd!vibe";
+/** รหัสผ่านทุกบัญชีตัวอย่าง — มาจาก SEED_PASSWORD ใน .env หรือสุ่มใหม่ถ้าไม่ได้ตั้งไว้ */
+const seedPassword = resolveSeedPassword();
+export const DEV_PASSWORD = seedPassword.password;
 
 async function main() {
   if (process.env.NODE_ENV === "production" && process.env.SEED_ALLOW_PROD !== "1") {
@@ -646,7 +648,8 @@ async function main() {
     }
   }
 
-  console.log(`[seed] เสร็จ — login: admin@app.local / ${DEV_PASSWORD}`);
+  console.log("[seed] เสร็จ — login: admin@app.local");
+  printSeedPassword(DEV_PASSWORD, seedPassword.generated);
 }
 
 main().finally(() => prisma.$disconnect());

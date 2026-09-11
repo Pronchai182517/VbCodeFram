@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { seedCore } from "./lib/seed-core";
 import { requireDatabaseUrl } from "./lib/require-database-url";
 import { ALL_PERMISSIONS } from "../src/permissions";
+import { resolveSeedPassword, printSeedPassword } from "./lib/seed-password";
 
 /**
  * ชุดข้อมูลตั้งต้นแบบละเอียด — ครอบคลุมทุกองค์ประกอบหลักของ framework
@@ -41,7 +42,8 @@ const daysAgo = (d: number, hour = 9) => {
   return dt;
 };
 
-export const DEEP_PASSWORD = "Passw0rd!vibe";
+const seedPassword = resolveSeedPassword();
+export const DEEP_PASSWORD = seedPassword.password;
 
 /** บทบาทเพิ่มเติมนอกเหนือจาก DEFAULT_ROLES — แสดงการผสมสิทธิ์แบบต่าง ๆ */
 const EXTRA_ROLES = [
@@ -324,7 +326,7 @@ async function main() {
   };
   console.log("\n📊 จำนวนแถวในฐานข้อมูล");
   for (const [k, v] of Object.entries(counts)) console.log(`   ${k.padEnd(18)} ${v}`);
-  console.log(`\n🔑 ทุกบัญชีที่ล็อกอินด้วยรหัสผ่านใช้: ${DEEP_PASSWORD}`);
+  printSeedPassword(DEEP_PASSWORD, seedPassword.generated);
   console.log("   ผู้ดูแลสูงสุด: admin@app.local\n");
 }
 

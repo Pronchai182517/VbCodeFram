@@ -2,7 +2,12 @@ import "dotenv/config";
 import { type BrowserContext, type Page, expect } from "@playwright/test";
 import { encode } from "next-auth/jwt";
 
-export const DEV_PASSWORD = "Passw0rd!vibe";
+/** ต้องเป็นรหัสเดียวกับที่ seed ใช้ — ตั้ง SEED_PASSWORD ใน .env ก่อนรัน e2e */
+export const DEV_PASSWORD = (() => {
+  const pw = process.env.SEED_PASSWORD?.trim();
+  if (!pw) throw new Error("ต้องตั้ง SEED_PASSWORD ใน .env ก่อนรัน e2e (ค่าเดียวกับที่ใช้ seed)");
+  return pw;
+})();
 export const ADMIN = { email: "admin@app.local", password: DEV_PASSWORD };
 
 /** ชื่อคุกกี้เซสชันของ next-auth บน http (ไม่ใช่ __Secure-) — เป็นทั้งชื่อคุกกี้และ `salt` ของ JWE */

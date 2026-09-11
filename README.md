@@ -25,7 +25,7 @@
    ```
    เปิดเบราว์เซอร์ไปที่: **http://localhost:3010**
    - บัญชี Admin ตั้งต้น: `admin@app.local`
-   - รหัสผ่าน: `Passw0rd!vibe`
+   - รหัสผ่าน: ดูค่า `SEED_PASSWORD` ในไฟล์ `.env` (สุ่มให้ตอนรัน `npm run setup` และไม่ถูก commit)
 
 > [!TIP]
 > ดูตัวอย่างประโยคคำสั่ง Prompt สำเร็จรูปสำหรับสั่ง AI เขียนฟีเจอร์ใหม่ได้ที่ [PROMPTS.md](file:///Users/jira/Documents/ViebCode/U-AI-MS/PROMPTS.md)
@@ -48,7 +48,9 @@ cp .env.docker.example .env.docker      # (ถ้ายังไม่มี) �
 docker compose --env-file .env.docker up -d --build
 ```
 
-เปิดเบราว์เซอร์ที่ **http://localhost:3010** — บัญชีตั้งต้น `admin@app.local` / `Passw0rd!vibe`
+เปิดเบราว์เซอร์ที่ **http://localhost:3010** — บัญชีตั้งต้นคือ `admin@app.local`
+ส่วนรหัสผ่านดูได้จาก log ของ service `migrate` (`docker compose --env-file .env.docker logs migrate | grep รหัสผ่าน`)
+หรือกำหนดเองล่วงหน้าด้วย `SEED_PASSWORD` ในไฟล์ `.env.docker`
 
 | service | หน้าที่ |
 | --- | --- |
@@ -193,7 +195,7 @@ journalctl --user -u vibe-framework-backup -n 20            # ผลการส
 - `npm run test` — รันเฉพาะ Unit tests ด้วย Vitest
 - `npm run test:integration` — รัน Integration tests
 - `npm run test:e2e` — รัน End-to-End tests ด้วย Playwright
-- `npm run db:seed` — สร้างผู้ใช้ตัวอย่าง 5 บัญชีและบทบาทตั้งต้น
+- `npm run db:seed` — สร้างผู้ใช้ตัวอย่างและบทบาทตั้งต้น (รหัสผ่านมาจาก `SEED_PASSWORD` ใน `.env` หรือสุ่มใหม่แล้วพิมพ์ออกหน้าจอ)
 - `npm run db:seed:deep` — ชุดข้อมูลตั้งต้นแบบละเอียด (2 องค์กร · 22 ผู้ใช้ · 12 บทบาท · 43 ข้อมูลตัวอย่าง · 122 ร่องรอยการใช้งาน)
 - `npm run sync:liyon` — ดึงไฟล์สไตล์ล่าสุดจาก Liyon Theme
 

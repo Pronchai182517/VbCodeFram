@@ -101,6 +101,12 @@ docker compose --env-file .env.docker up -d --build
 
 ค่าที่แก้บ่อย: `APP_PORT`, `APP_URL`, `SEED_ON_START` / `SEED_PROFILE`, SMTP และ OAuth
 
+> [!WARNING]
+> **`APP_URL` ต้องเป็น URL ที่ผู้ใช้เปิดจริง** (เช่น `https://app.example.com`) ไม่ใช่ `http://localhost:3010`
+> ค่านี้กำหนดทั้งลิงก์ redirect หลังล็อกอิน ลิงก์ในอีเมล และ**ชื่อคุกกี้เซสชัน** (`https` → `__Secure-…`)
+> ที่ [src/proxy.ts](src/proxy.ts#L28) ใช้อ่านเซสชัน — ตั้งผิดแล้วจะล็อกอินได้แต่เมนูและข้อมูลไม่ขึ้น
+> เปลี่ยนค่านี้แล้วต้อง `docker compose --env-file .env.docker up -d` และให้ผู้ใช้ล็อกอินใหม่ (คุกกี้เปลี่ยนชื่อ)
+
 > [!IMPORTANT]
 > ก่อนขึ้น production: เปลี่ยน `AUTH_SECRET` (`openssl rand -base64 32`), ตั้ง `APP_URL` เป็นโดเมนจริง,
 > ให้ `SEED_ON_START=false` แล้วสร้างผู้ดูแลระบบด้วย `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` แทน

@@ -3,6 +3,13 @@ import type { Dictionary } from "@/shared/lib/i18n/translate";
 export const MESSAGES: Dictionary = {
   "app.name": { th: "VibeCore", en: "VibeCore" },
   "app.tagline": { th: "ระบบบริหารจัดการองค์กร", en: "Enterprise Management Framework" },
+  "portal.footer.tagline": { th: "ระบบสารสนเทศและบริการดิจิทัลสำหรับนักศึกษา บุคลากร และผู้มาติดต่อ", en: "Digital information and services for students, staff, and visitors" },
+  "portal.footer.explore": { th: "สำรวจ", en: "Explore" },
+  "portal.footer.forStaff": { th: "สำหรับเจ้าหน้าที่", en: "For staff" },
+  "portal.footer.nav": { th: "ลิงก์ท้ายหน้า", en: "Footer" },
+  "portal.footer.rights": { th: "สงวนลิขสิทธิ์", en: "All rights reserved" },
+  "portal.footer.backToTop": { th: "กลับขึ้นด้านบน", en: "Back to top" },
+  "portal.footer.poweredBy": { th: "ขับเคลื่อนด้วย", en: "Powered by" },
   "common.save": { th: "บันทึก", en: "Save" },
   "common.cancel": { th: "ยกเลิก", en: "Cancel" },
   "common.close": { th: "ปิด", en: "Close" },

@@ -4,6 +4,10 @@ import { auth, resolveBrandingLogo } from "@/features/identity/server";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Newspaper, Users, GraduationCap, CalendarDays, FileText, LogIn, LayoutDashboard, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PortalFooter } from "./_components/portal-footer";
+
+/** จุดยึดสำหรับลิงก์ "กลับขึ้นด้านบน" ที่ท้ายหน้า — ทำงานได้โดยไม่ต้องใช้ JavaScript */
+const TOP_ID = "portal-top";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const t = await getT();
@@ -13,7 +17,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const brandTagline = brand.tagline;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20">
+    <div id={TOP_ID} className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20 scroll-smooth">
       {/* Public Portal Top Navigation Bar */}
       <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -102,82 +106,7 @@ export default async function PortalLayout({ children }: { children: React.React
         {children}
       </main>
 
-      {/* Public Portal Footer */}
-      <footer className="border-t border-border/40 bg-muted/30 py-12 mt-16 text-sm text-muted-foreground">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div className="md:col-span-2 space-y-3">
-              <div className="font-bold text-foreground text-base flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
-                {brandName}
-              </div>
-              <p className="max-w-md text-xs sm:text-sm leading-relaxed">
-                {brandTagline} — ระบบบริหารจัดการและบริการดิจิทัลคณะ ครอบคลุมงานวิชาการ การวิจัย และการสื่อสารประชาสัมพันธ์
-              </p>
-            </div>
-            <div>
-              <div className="font-semibold text-foreground mb-3 text-xs uppercase tracking-wider">
-                เมนูด่วน
-              </div>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li>
-                  <Link href="/news" className="hover:text-foreground transition-colors">
-                    {t("portal.nav.news")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/personnel" className="hover:text-foreground transition-colors">
-                    {t("portal.nav.personnel")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/curriculum" className="hover:text-foreground transition-colors">
-                    {t("portal.nav.curriculum")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/documents" className="hover:text-foreground transition-colors">
-                    {t("documents.nav")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/calendar" className="hover:text-foreground transition-colors">
-                    {t("portal.nav.calendar")}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold text-foreground mb-3 text-xs uppercase tracking-wider">
-                สำหรับเจ้าหน้าที่
-              </div>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li>
-                  <Link href="/login" className="hover:text-foreground transition-colors flex items-center gap-1.5">
-                    <LogIn className="h-3.5 w-3.5" />
-                    {t("portal.nav.admin")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin/news" className="hover:text-foreground transition-colors">
-                    {t("news.title")}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div>
-              © {new Date().getFullYear()} {brandName}. All rights reserved.
-            </div>
-            <div className="flex items-center gap-4">
-              <span>Faculty Information System</span>
-              <span>•</span>
-              <span>vibe-framework</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PortalFooter brandName={brandName} brandTagline={brandTagline} logoUrl={logo.hasLogo ? logo.url : null} topId={TOP_ID} t={t} />
     </div>
   );
 }
